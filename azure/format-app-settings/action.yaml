@@ -1,0 +1,137 @@
+name: "Format App Settings"
+description: |
+  Converts environment-style key-value pairs into the JSON structure expected by Azure App Settings.
+author: 'step-security'
+
+inputs:
+  APP_SETTINGS_ENV:
+    required: true
+    description: |
+      One `KEY=VALUE` pair per line representing the settings to include. Example:
+
+      ```yaml
+      APP_SETTINGS_ENV: |
+        APP_SETTING_A=SETTING_A
+        APP_SETTING_B=12
+      ```
+  STICKY_SETTINGS:
+    required: false
+    description: Comma-separated list of setting names that should be flagged as slot-sticky
+  ENCRYPT_OUTPUT:
+    required: false
+    description: |
+      When set to **true**, the formatted output is encrypted and returned as a base64-encoded string instead of plain JSON.
+
+      Also requires `ENCRYPTION_PASSWORD` to be provided.
+  ENCRYPTION_PASSWORD:
+    required: false
+    description: |
+      Mandatory when `ENCRYPT_OUTPUT` is **true**.
+
+      Passphrase supplied to OpenSSL for encrypting the output. The identical passphrase must be used when decrypting.
+      This value never needs to leave the GitHub Actions environment.
+  ENCRYPTION_FLAGS:
+    required: false
+    description: |
+      Custom OpenSSL cipher flags to use during encryption. The identical flags must be supplied on decryption.
+
+      **default**: `-aes-256-cbc -pbkdf2 -salt`
+    default: "-aes-256-cbc -pbkdf2 -salt"
+
+outputs:
+  APP_SETTINGS:
+    description: |
+      Contains one of the following depending on whether encryption was requested:
+      - The raw App Settings JSON string
+      - A Base64-encoded string of the encrypted App Settings
+    value: ${{ steps.appSettings.outputs.APP_SETTINGS }}
+  ENCRYPTED:
+    description: "Set to **true** when the output has been encrypted; **false** otherwise"
+    value: ${{ inputs.ENCRYPT_OUTPUT == 'true' && 'true' || 'false' }}
+
+runs:
+  using: composite
+  steps:
+    - name: Subscription check
+      shell: bash
+      env:
+        REPO_PRIVATE: ${{ github.event.repository.private }}
+      run: |
+        UPSTREAM="zingdevlimited/actions-helpers"
+        ACTION_REPO="${GITHUB_ACTION_REPOSITORY:-}"
+        DOCS_URL="https://docs.stepsecurity.io/actions/stepsecurity-maintained-actions"
+
+        echo ""
+        echo -e "\033[1;36mStepSecurity Maintained Action\033[0m"
+        echo "Secure drop-in replacement for $UPSTREAM"
+        if [ "$REPO_PRIVATE" = "false" ]; then
+          echo -e "\033[32m✓ Free for public repositories\033[0m"
+        fi
+        echo -e "\033[36mLearn more:\033[0m $DOCS_URL"
+        echo ""
+
+        if [ "$REPO_PRIVATE" != "false" ]; then
+          SERVER_URL="${GITHUB_SERVER_URL:-https://github.com}"
+
+          if [ "$SERVER_URL" != "https://github.com" ]; then
+            BODY=$(printf '{"action":"%s","ghes_server":"%s"}' "$ACTION_REPO" "$SERVER_URL")
+          else
+            BODY=$(printf '{"action":"%s"}' "$ACTION_REPO")
+          fi
+
+          API_URL="https://agent.api.stepsecurity.io/v1/github/$GITHUB_REPOSITORY/actions/maintained-actions-subscription"
+
+          RESPONSE=$(curl --max-time 3 -s -w "%{http_code}" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d "$BODY" \
+            "$API_URL" -o /dev/null) && CURL_EXIT_CODE=0 || CURL_EXIT_CODE=$?
+
+          if [ $CURL_EXIT_CODE -ne 0 ]; then
+            echo "Timeout or API not reachable. Continuing to next step."
+          elif [ "$RESPONSE" = "403" ]; then
+            echo -e "::error::\033[1;31mThis action requires a StepSecurity subscription for private repositories.\033[0m"
+            echo -e "::error::\033[31mLearn how to enable a subscription: $DOCS_URL\033[0m"
+            exit 1
+          fi
+        fi
+
+    - name: Validate inputs
+      shell: bash
+      env:
+        APP_SETTINGS_ENV: ${{ inputs.APP_SETTINGS_ENV }}
+        ENCRYPT_OUTPUT: ${{ inputs.ENCRYPT_OUTPUT }}
+        ENCRYPTION_PASSWORD: ${{ inputs.ENCRYPTION_PASSWORD }}
+      run: |
+        set -euo pipefail
+
+        errors=()
+
+        [[ -n "${APP_SETTINGS_ENV:-}" ]] || errors+=("Required input APP_SETTINGS_ENV was not provided")
+
+        # A password is only meaningful, but then mandatory, when encrypting.
+        if [[ "${ENCRYPT_OUTPUT:-}" == "true" && -z "${ENCRYPTION_PASSWORD:-}" ]]; then
+          errors+=("ENCRYPTION_PASSWORD is required when ENCRYPT_OUTPUT is true")
+        fi
+
+        if (( ${#errors[@]} > 0 )); then
+          printf '::error::%s\n' "${errors[@]}"
+          exit 1
+        fi
+
+    - name: Format App Settings
+      id: appSettings
+      shell: bash
+      env:
+        APP_SETTINGS_ENV: ${{ inputs.APP_SETTINGS_ENV }}
+        STICKY_SETTINGS: ${{ inputs.STICKY_SETTINGS }}
+        ENCRYPT_OUTPUT: ${{ inputs.ENCRYPT_OUTPUT }}
+        ENCRYPTION_PASSWORD: ${{ inputs.ENCRYPTION_PASSWORD }}
+        ENCRYPTION_FLAGS: ${{ inputs.ENCRYPTION_FLAGS }}
+      run: |
+        bash "$GITHUB_ACTION_PATH/format-app-settings.sh" \
+          "$APP_SETTINGS_ENV" \
+          "$STICKY_SETTINGS" \
+          "$ENCRYPT_OUTPUT" \
+          "$ENCRYPTION_PASSWORD" \
+          "$ENCRYPTION_FLAGS"

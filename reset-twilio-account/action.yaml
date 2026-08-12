@@ -1,0 +1,28 @@
+name: Reset Twilio Account
+description: |
+  Removes or resets selected resource types in a Twilio account, helping restore test accounts to a known baseline state.
+author: 'step-security'
+
+inputs:
+  TWILIO_API_KEY:
+    description: SID of the Twilio API Key used for authentication
+    required: true
+  TWILIO_API_SECRET:
+    description: Secret associated with the Twilio API Key
+    required: true
+  TASKROUTER:
+    description: When set to `true`, Taskrouter resources in the account are deleted or reset
+  SYNC:
+    description: When set to `true`, Sync resources in the account are deleted or reset
+  STUDIO:
+    description: When set to `true`, Studio Flow resources in the account are deleted or reset
+  SERVERLESS:
+    description: When set to `true`, Twilio Serverless services in the account are deleted or reset
+  FLEX_CUSTOM_PLUGINS:
+    description: When set to `true`, all custom Flex plugins are deactivated
+  FLEX_UI_ATTRIBUTES:
+    description: When set to `true`, the Flex UI attribute configuration is reverted to its default values
+
+runs:
+  using: node24
+  main: dist/index.js

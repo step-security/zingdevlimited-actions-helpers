@@ -1,0 +1,45 @@
+name: "Create Event Stream Subscription"
+description: "Creates a Twilio Event Stream webhook Sink and attaches it to a new Subscription for the specified event types."
+author: 'step-security'
+
+inputs:
+  SINK_WEBHOOK_URL:
+    description: Target URL that will receive the forwarded event payloads
+    required: true
+  SINK_WEBHOOK_METHOD:
+    description: HTTP method the Sink uses when delivering events (GET or POST)
+    required: true
+  SINK_DESCRIPTION:
+    description: Human-readable label describing the purpose of the webhook sink
+    required: true
+  SINK_BATCH_EVENTS:
+    description: Controls whether events are delivered in batches; set to `true` to enable batching or `false` to deliver individually
+    required: true
+  SUBSCRIPTION_DESCRIPTION:
+    description: Human-readable label describing the purpose of the event subscription
+    required: true
+  EVENT_TYPES:
+    description: |
+      Newline-separated list of `event_type=schema_version` pairs that the subscription will receive. Example:
+
+      ```yaml
+      EVENT_TYPES: |
+        com.twilio.messaging.message.sent=2
+      ```
+    required: true
+  TWILIO_API_KEY:
+    description: SID of the Twilio API Key used for authentication
+    required: true
+  TWILIO_API_SECRET:
+    description: Secret associated with the Twilio API Key
+    required: true
+
+outputs:
+  SINK_SID:
+    description: SID of the created Event Stream Sink
+  SUBSCRIPTION_SID:
+    description: SID of the created Event Stream Subscription
+
+runs:
+  using: node24
+  main: dist/index.js

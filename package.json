@@ -1,0 +1,17 @@
+{
+  "name": "zingdevlimited-actions-helpers",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@actions/core": "^3.0.1",
+    "axios": "1.19.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "@vercel/ncc": "0.44.1",
+    "typescript": "5.8.3"
+  }
+}
