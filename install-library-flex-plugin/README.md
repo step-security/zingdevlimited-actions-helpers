@@ -10,7 +10,7 @@ Installation is asynchronous on Twilio's side. The action submits the install an
 
 ```yaml
   - name: Install the chat transfer plugin
-    uses: step-security/zingdevlimited-actions-helpers/install-library-flex-plugin@v4
+    uses: step-security/zingdevlimited-actions-helpers/install-library-flex-plugin@v5
     with:
       FLEX_UI_VERSION: 2.9.1
       PLUGIN_NAME: plibo-chat-transfer

@@ -13,7 +13,7 @@ Pair it with [Deploy Flex Plugin Asset](../deploy-flex-plugin-asset/), which pro
 ```yaml
   - name: Upload the plugin bundle
     id: bundle
-    uses: step-security/zingdevlimited-actions-helpers/deploy-flex-plugin-asset@v4
+    uses: step-security/zingdevlimited-actions-helpers/deploy-flex-plugin-asset@v5
     with:
       FILE_PATH: plugin-agent-tools/build/plugin-agent-tools.js
       PLUGIN_NAME: plugin-agent-tools
@@ -23,7 +23,7 @@ Pair it with [Deploy Flex Plugin Asset](../deploy-flex-plugin-asset/), which pro
 
   - name: Register the plugin version
     id: version
-    uses: step-security/zingdevlimited-actions-helpers/create-flex-plugin-version@v4
+    uses: step-security/zingdevlimited-actions-helpers/create-flex-plugin-version@v5
     with:
       PLUGIN_NAME: plugin-agent-tools
       PLUGIN_VERSION: 1.4.0

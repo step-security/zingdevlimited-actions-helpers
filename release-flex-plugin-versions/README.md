@@ -11,7 +11,7 @@ steps:
   (...)
 
   - name: Release Flex Plugins
-    uses: step-security/zingdevlimited-actions-helpers/release-flex-plugin-versions@v4
+    uses: step-security/zingdevlimited-actions-helpers/release-flex-plugin-versions@v5
     with:
       PLUGIN_VERSIONS: |
         my-plugin=1.2.0

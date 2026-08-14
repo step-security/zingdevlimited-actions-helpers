@@ -10,7 +10,7 @@ The directory is walked recursively and each file's path relative to `ASSETS_DIR
 
 ```yaml
   - name: Deploy the prompt assets
-    uses: step-security/zingdevlimited-actions-helpers/deploy-assets@v4
+    uses: step-security/zingdevlimited-actions-helpers/deploy-assets@v5
     with:
       ASSETS_DIRECTORY: assets/prompts
       SERVICE_NAME: ivr-prompts
@@ -43,7 +43,7 @@ By default a deployment **defines** the environment: the build contains only wha
 
 ```yaml
   - name: Add the English prompts
-    uses: step-security/zingdevlimited-actions-helpers/deploy-assets@v4
+    uses: step-security/zingdevlimited-actions-helpers/deploy-assets@v5
     with:
       ASSETS_DIRECTORY: assets/prompts/en
       SERVICE_NAME: shared-assets
@@ -85,7 +85,7 @@ deployed with:
 
 ```yaml
   - name: Deploy the prompt assets
-    uses: step-security/zingdevlimited-actions-helpers/deploy-assets@v4
+    uses: step-security/zingdevlimited-actions-helpers/deploy-assets@v5
     with:
       ASSETS_DIRECTORY: assets/prompts
       SERVICE_NAME: ivr-prompts

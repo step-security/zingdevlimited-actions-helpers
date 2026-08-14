@@ -17,7 +17,7 @@ steps:
       sparse-checkout-cone-mode: false
 
   - name: Apply Sync resources
-    uses: step-security/zingdevlimited-actions-helpers/update-sync@v4
+    uses: step-security/zingdevlimited-actions-helpers/update-sync@v5
     with:
       CONFIG_PATH: sync-config.json
       TWILIO_API_KEY: ${{ vars.TWILIO_API_KEY }}

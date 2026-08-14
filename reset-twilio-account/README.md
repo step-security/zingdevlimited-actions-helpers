@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Reset the development account
-        uses: step-security/zingdevlimited-actions-helpers/reset-twilio-account@v4
+        uses: step-security/zingdevlimited-actions-helpers/reset-twilio-account@v5
         with:
           TWILIO_API_KEY: ${{ vars.DEV_TWILIO_API_KEY }}
           TWILIO_API_SECRET: ${{ secrets.DEV_TWILIO_API_SECRET }}

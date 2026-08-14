@@ -17,7 +17,7 @@ steps:
       sparse-checkout-cone-mode: false
 
   - name: Apply Content Templates
-    uses: step-security/zingdevlimited-actions-helpers/update-content-templates@v4
+    uses: step-security/zingdevlimited-actions-helpers/update-content-templates@v5
     with:
       CONFIG_PATH: content-templates.json
       TWILIO_API_KEY: ${{ vars.TWILIO_API_KEY }}
@@ -91,7 +91,7 @@ Because Twilio cannot edit a Content Template in place, changing a template's wo
 
 ```yaml
   - name: Apply Content Templates
-    uses: step-security/zingdevlimited-actions-helpers/update-content-templates@v4
+    uses: step-security/zingdevlimited-actions-helpers/update-content-templates@v5
     with:
       CONFIG_PATH: content-templates.json
       ALLOW_REPLACE: true

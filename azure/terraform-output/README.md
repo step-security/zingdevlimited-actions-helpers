@@ -11,7 +11,7 @@ The state blob is only read, never locked or modified.
 ```yaml
 - name: Read the Terraform outputs
   id: tf
-  uses: step-security/zingdevlimited-actions-helpers/azure/terraform-output@v4
+  uses: step-security/zingdevlimited-actions-helpers/azure/terraform-output@v5
   with:
     AZ_TENANT_ID: ${{ vars.AZ_TENANT_ID }}
     AZ_CLIENT_ID: ${{ vars.AZ_CLIENT_ID }}
@@ -69,7 +69,7 @@ Because the JSON preserves Terraform's own structure, each output is reached thr
 ```yaml
 - name: Read the Terraform outputs
   id: tf
-  uses: step-security/zingdevlimited-actions-helpers/azure/terraform-output@v4
+  uses: step-security/zingdevlimited-actions-helpers/azure/terraform-output@v5
   with:
     # (...)
     EXPORT_OUTPUTS: TWILIO_ACCOUNT_SID,FUNCTIONS_APP_NAME
