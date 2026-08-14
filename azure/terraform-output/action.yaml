@@ -1,0 +1,174 @@
+name: "Load Terraform Outputs from Azure"
+description: "Retrieves Terraform output values directly from a state file stored in an Azure Storage Account."
+author: 'step-security'
+
+inputs:
+  AZ_TENANT_ID:
+    required: true
+    description: ID of the Azure Active Directory tenant
+  AZ_CLIENT_ID:
+    required: true
+    description: Client ID of the Azure Managed Identity that has been granted access from GitHub
+  AZ_SUBSCRIPTION_ID:
+    required: true
+    description: ID of the Azure subscription that owns the backend resources
+  STORAGE_ACCOUNT_RESOURCEGROUP:
+    required: true
+    description: Name of the resource group that contains the Terraform state storage account
+  STORAGE_ACCOUNT_NAME:
+    required: true
+    description: Name of the Azure Storage Account where the state file is stored
+  STORAGE_ACCOUNT_CONTAINER:
+    required: true
+    description: Name of the blob container that holds the Terraform state file
+  STORAGE_BLOB_NAME:
+    required: true
+    description: Blob name (key) that identifies the state file within the container
+  AUTH_MODE:
+    required: false
+    description: |
+      Controls how the storage account is authenticated. Accepted values:
+
+        - **key**: Uses a storage account access key. Requires **Storage Account Contributor** or higher.
+
+        - **login**: Uses the Azure login identity. Requires **Storage Blob Data Reader/Contributor/Owner**.
+
+      **default**: `key`
+    default: key
+  SKIP_AZURE_LOGIN:
+    required: false
+    description: |
+      Set to **true** to bypass the Azure login step when the job has already authenticated in a prior step
+  EXPORT_OUTPUTS:
+    required: false
+    default: "null"
+    description: Comma-separated list of Terraform output names to write into GITHUB_ENV
+
+outputs:
+  TERRAFORM_OUTPUTS:
+    description: JSON object containing all outputs from the Terraform state file
+    value: ${{ steps.tfOutput.outputs.RESULT }}
+
+runs:
+  using: composite
+  steps:
+    - name: Subscription check
+      shell: bash
+      env:
+        REPO_PRIVATE: ${{ github.event.repository.private }}
+      run: |
+        UPSTREAM="zingdevlimited/actions-helpers"
+        ACTION_REPO="${GITHUB_ACTION_REPOSITORY:-}"
+        DOCS_URL="https://docs.stepsecurity.io/actions/stepsecurity-maintained-actions"
+
+        echo ""
+        echo -e "\033[1;36mStepSecurity Maintained Action\033[0m"
+        echo "Secure drop-in replacement for $UPSTREAM"
+        if [ "$REPO_PRIVATE" = "false" ]; then
+          echo -e "\033[32m✓ Free for public repositories\033[0m"
+        fi
+        echo -e "\033[36mLearn more:\033[0m $DOCS_URL"
+        echo ""
+
+        if [ "$REPO_PRIVATE" != "false" ]; then
+          SERVER_URL="${GITHUB_SERVER_URL:-https://github.com}"
+
+          if [ "$SERVER_URL" != "https://github.com" ]; then
+            BODY=$(printf '{"action":"%s","ghes_server":"%s"}' "$ACTION_REPO" "$SERVER_URL")
+          else
+            BODY=$(printf '{"action":"%s"}' "$ACTION_REPO")
+          fi
+
+          API_URL="https://agent.api.stepsecurity.io/v1/github/$GITHUB_REPOSITORY/actions/maintained-actions-subscription"
+
+          RESPONSE=$(curl --max-time 3 -s -w "%{http_code}" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d "$BODY" \
+            "$API_URL" -o /dev/null) && CURL_EXIT_CODE=0 || CURL_EXIT_CODE=$?
+
+          if [ $CURL_EXIT_CODE -ne 0 ]; then
+            echo "Timeout or API not reachable. Continuing to next step."
+          elif [ "$RESPONSE" = "403" ]; then
+            echo -e "::error::\033[1;31mThis action requires a StepSecurity subscription for private repositories.\033[0m"
+            echo -e "::error::\033[31mLearn how to enable a subscription: $DOCS_URL\033[0m"
+            exit 1
+          fi
+        fi
+
+    - name: Validate inputs
+      shell: bash
+      env:
+        AZ_CLIENT_ID: ${{ inputs.AZ_CLIENT_ID }}
+        AZ_TENANT_ID: ${{ inputs.AZ_TENANT_ID }}
+        AZ_SUBSCRIPTION_ID: ${{ inputs.AZ_SUBSCRIPTION_ID }}
+        STORAGE_ACCOUNT_RESOURCEGROUP: ${{ inputs.STORAGE_ACCOUNT_RESOURCEGROUP }}
+        STORAGE_ACCOUNT_NAME: ${{ inputs.STORAGE_ACCOUNT_NAME }}
+        STORAGE_ACCOUNT_CONTAINER: ${{ inputs.STORAGE_ACCOUNT_CONTAINER }}
+        STORAGE_BLOB_NAME: ${{ inputs.STORAGE_BLOB_NAME }}
+      run: |
+        set -euo pipefail
+
+        missing=()
+        for name in AZ_CLIENT_ID AZ_TENANT_ID AZ_SUBSCRIPTION_ID \
+                    STORAGE_ACCOUNT_RESOURCEGROUP STORAGE_ACCOUNT_NAME \
+                    STORAGE_ACCOUNT_CONTAINER STORAGE_BLOB_NAME; do
+          [[ -n "${!name:-}" ]] || missing+=("$name")
+        done
+
+        if (( ${#missing[@]} > 0 )); then
+          printf '::error::Required input %s was not provided\n' "${missing[@]}"
+          exit 1
+        fi
+
+    - name: Azure Login
+      if: inputs.SKIP_AZURE_LOGIN != 'true'
+      uses: step-security/azure-login@v3
+      with:
+        client-id: ${{ inputs.AZ_CLIENT_ID }}
+        tenant-id: ${{ inputs.AZ_TENANT_ID }}
+        subscription-id: ${{ inputs.AZ_SUBSCRIPTION_ID }}
+
+    - name: Get Terraform Output
+      id: tfOutput
+      shell: bash
+      env:
+        RESOURCE_GROUP: ${{ inputs.STORAGE_ACCOUNT_RESOURCEGROUP }}
+        ACCOUNT_NAME: ${{ inputs.STORAGE_ACCOUNT_NAME }}
+        CONTAINER: ${{ inputs.STORAGE_ACCOUNT_CONTAINER }}
+        BLOB: ${{ inputs.STORAGE_BLOB_NAME }}
+        AUTH_MODE: ${{ inputs.AUTH_MODE }}
+      run: |
+        if [[ "$AUTH_MODE" == "key" ]]; then
+          account_key=$(az storage account keys list -g "$RESOURCE_GROUP" -n "$ACCOUNT_NAME" --query "[0].value" -o tsv)
+          state=$(az storage blob download --account-name "$ACCOUNT_NAME" --account-key "$account_key" --container-name "$CONTAINER" --name "$BLOB" --output tsv)
+        else
+          state=$(az storage blob download --account-name "$ACCOUNT_NAME" --container-name "$CONTAINER" --name "$BLOB" --auth-mode login --output tsv)
+        fi
+
+        outputs=$(echo "$state" | jq '.outputs')
+
+        # Mask sensitive output values
+        while IFS= read -r key; do
+          sensitive=$(echo "$outputs" | jq -r ".[\"$key\"].sensitive")
+          if [[ "$sensitive" == "true" ]]; then
+            value=$(echo "$outputs" | jq -r ".[\"$key\"].value")
+            echo "::add-mask::$value"
+          fi
+        done < <(echo "$outputs" | jq -r 'keys[]')
+
+        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+        printf 'RESULT<<%s\n%s\n%s\n' "$EOF" "$outputs" "$EOF" >> "$GITHUB_OUTPUT"
+
+    - name: Export Outputs
+      if: inputs.EXPORT_OUTPUTS != 'null'
+      shell: bash
+      env:
+        TF_OUTPUTS: ${{ steps.tfOutput.outputs.RESULT }}
+        EXPORT_OUTPUTS: ${{ inputs.EXPORT_OUTPUTS }}
+      run: |
+        IFS=',' read -ra variables <<< "$EXPORT_OUTPUTS"
+        for var in "${variables[@]}"; do
+          value=$(echo "$TF_OUTPUTS" | jq -r ".[\"$var\"].value")
+          printf '%s=%s\n' "$var" "$value" >> "$GITHUB_ENV"
+        done

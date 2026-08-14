@@ -1,0 +1,34 @@
+name: "Update Twilio Flex Worker Skills"
+description: Adds or synchronises Twilio Flex worker skills, supporting both flat skills and skills with configurable proficiency levels.
+author: 'step-security'
+inputs:
+  SIMPLE_SKILLS:
+    required: false
+    description: Newline-separated list of skill names that carry no proficiency levels
+  COMPLEX_SKILLS:
+    required: false
+    description: |
+      JSON array of skill definitions that include proficiency level configuration. Each element must follow this structure:
+
+      ```json
+      {
+        "name": "skillName",
+        "multivalue": false | true,
+        "minimum": null | number,
+        "maximum": null | number,
+      }
+      ```
+  MODE:
+    required: false
+    description: Controls how the skills list is applied. Use `merge` to add to existing skills, or `replace` to overwrite the full list. Defaults to `merge`.
+    default: merge
+  TWILIO_API_KEY:
+    required: true
+    description: SID of the Twilio API Key used for authentication
+  TWILIO_API_SECRET:
+    required: true
+    description: Secret associated with the Twilio API Key
+
+runs:
+  using: node24
+  main: dist/index.js

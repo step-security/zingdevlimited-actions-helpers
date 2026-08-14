@@ -1,0 +1,25 @@
+name: "Install Library Flex Plugin"
+description: "Activates a plugin sourced from the Twilio Flex Plugin Library on the configured Flex account"
+author: 'step-security'
+inputs:
+  FLEX_UI_VERSION:
+    description: Version of the Twilio Flex UI currently active on the account
+    required: true
+  PLUGIN_NAME:
+    description: |
+      Unique identifier of the Library Plugin in kebab-case format
+    required: true
+  VERSION_SID:
+    description: |
+      SID of the specific Library Plugin Version to install (begins with `JH...`)
+    required: true
+  TWILIO_API_KEY:
+    description: SID of the Twilio API Key used for authentication
+    required: true
+  TWILIO_API_SECRET:
+    description: Secret associated with the Twilio API Key
+    required: true
+
+runs:
+  using: node24
+  main: dist/index.js

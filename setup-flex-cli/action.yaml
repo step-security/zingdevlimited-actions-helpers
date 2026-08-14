@@ -1,0 +1,152 @@
+name: "Setup Flex CLI"
+description: Installs the Twilio CLI and the Flex plugin at the version declared in the plugin's package.json
+author: 'step-security'
+inputs:
+  PLUGIN_DIRECTORY:
+    required: true
+    description: Path to the root directory of the Flex plugin project
+outputs:
+  PLUGIN_NAME:
+    description: Plugin name extracted from the `name` field of package.json
+    value: ${{ steps.resolve.outputs.PLUGIN_NAME }}
+  PLUGIN_VERSION:
+    description: Plugin version extracted from the `version` field of package.json
+    value: ${{ steps.resolve.outputs.PLUGIN_VERSION }}
+
+runs:
+  using: composite
+  steps:
+    - name: Subscription check
+      shell: bash
+      env:
+        REPO_PRIVATE: ${{ github.event.repository.private }}
+      run: |
+        UPSTREAM="zingdevlimited/actions-helpers"
+        ACTION_REPO="${GITHUB_ACTION_REPOSITORY:-}"
+        DOCS_URL="https://docs.stepsecurity.io/actions/stepsecurity-maintained-actions"
+
+        echo ""
+        echo -e "\033[1;36mStepSecurity Maintained Action\033[0m"
+        echo "Secure drop-in replacement for $UPSTREAM"
+        if [ "$REPO_PRIVATE" = "false" ]; then
+          echo -e "\033[32m✓ Free for public repositories\033[0m"
+        fi
+        echo -e "\033[36mLearn more:\033[0m $DOCS_URL"
+        echo ""
+
+        if [ "$REPO_PRIVATE" != "false" ]; then
+          SERVER_URL="${GITHUB_SERVER_URL:-https://github.com}"
+
+          if [ "$SERVER_URL" != "https://github.com" ]; then
+            BODY=$(printf '{"action":"%s","ghes_server":"%s"}' "$ACTION_REPO" "$SERVER_URL")
+          else
+            BODY=$(printf '{"action":"%s"}' "$ACTION_REPO")
+          fi
+
+          API_URL="https://agent.api.stepsecurity.io/v1/github/$GITHUB_REPOSITORY/actions/maintained-actions-subscription"
+
+          RESPONSE=$(curl --max-time 3 -s -w "%{http_code}" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d "$BODY" \
+            "$API_URL" -o /dev/null) && CURL_EXIT_CODE=0 || CURL_EXIT_CODE=$?
+
+          if [ $CURL_EXIT_CODE -ne 0 ]; then
+            echo "Timeout or API not reachable. Continuing to next step."
+          elif [ "$RESPONSE" = "403" ]; then
+            echo -e "::error::\033[1;31mThis action requires a StepSecurity subscription for private repositories.\033[0m"
+            echo -e "::error::\033[31mLearn how to enable a subscription: $DOCS_URL\033[0m"
+            exit 1
+          fi
+        fi
+
+    - name: Validate inputs
+      shell: bash
+      env:
+        PLUGIN_DIRECTORY: ${{ inputs.PLUGIN_DIRECTORY }}
+      run: |
+        set -euo pipefail
+
+        if [[ -z "${PLUGIN_DIRECTORY:-}" ]]; then
+          echo "::error::Required input PLUGIN_DIRECTORY was not provided"
+          exit 1
+        fi
+
+        if [[ ! -f "$PLUGIN_DIRECTORY/package.json" ]]; then
+          echo "::error::No package.json found in '$PLUGIN_DIRECTORY'. Check the path and that the repository has been checked out."
+          exit 1
+        fi
+
+    - name: Resolve Flex Plugin Scripts Version
+      id: resolve
+      shell: bash
+      working-directory: ${{ inputs.PLUGIN_DIRECTORY }}
+      run: |
+        VER=$(cat package.json | jq -r '.dependencies["@twilio/flex-plugin-scripts"]')
+        echo "PLUGIN_SCRIPTS_VERSION=$VER" >> $GITHUB_ENV
+
+        PLUGIN_NAME=$(cat package.json | jq -r '.name')
+        echo "PLUGIN_NAME=$PLUGIN_NAME" >> $GITHUB_OUTPUT
+        PLUGIN_VERSION=$(cat package.json | jq -r '.version')
+        echo "PLUGIN_VERSION=$PLUGIN_VERSION" >> $GITHUB_OUTPUT
+
+    # Twilio publishes @twilio-labs/plugin-flex in lockstep with
+    # @twilio/flex-plugin-scripts, and each release declares a closed engines.node
+    # range. As of the latest release (7.1.2) that range tops out at ^22 — Twilio
+    # has never shipped a plugin-flex that permits Node 24 — so the Node the
+    # caller sets up has to fall inside the range for the version being installed.
+    # Checking here turns yarn's "The engine node is incompatible" into something
+    # that names the offending version and the Node to use instead.
+    - name: Check Node compatibility
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        RANGE=$(npm view "@twilio-labs/plugin-flex@$PLUGIN_SCRIPTS_VERSION" engines.node 2>/dev/null | tail -1 | tr -d "'\"" || true)
+        if [[ -z "$RANGE" ]]; then
+          echo "::warning::Could not read the engines.node range for @twilio-labs/plugin-flex@$PLUGIN_SCRIPTS_VERSION; continuing."
+          exit 0
+        fi
+
+        NODE_VERSION=$(node -p 'process.versions.node')
+        NODE_MAJOR=${NODE_VERSION%%.*}
+
+        # Ranges seen in practice are either a list of majors ("^16 || ^18 || ^22")
+        # or an open lower bound (">=14.0.0"). Anything else is reported and waved
+        # through rather than blocking on a shape we did not anticipate.
+        CARET_MAJORS=$(grep -oE '\^[[:space:]]*[0-9]+' <<< "$RANGE" | grep -oE '[0-9]+' | sort -n -u || true)
+        MIN_MAJOR=$(grep -oE '>=[[:space:]]*[0-9]+' <<< "$RANGE" | grep -oE '[0-9]+' | head -1 || true)
+
+        if [[ -n "$CARET_MAJORS" ]]; then
+          if ! grep -qx "$NODE_MAJOR" <<< "$CARET_MAJORS"; then
+            echo "::error::@twilio-labs/plugin-flex@$PLUGIN_SCRIPTS_VERSION supports Node $RANGE, but this job is running Node $NODE_VERSION. Pin actions/setup-node to $(tail -1 <<< "$CARET_MAJORS")."
+            exit 1
+          fi
+        elif [[ -n "$MIN_MAJOR" ]]; then
+          if (( NODE_MAJOR < MIN_MAJOR )); then
+            echo "::error::@twilio-labs/plugin-flex@$PLUGIN_SCRIPTS_VERSION requires Node $RANGE, but this job is running Node $NODE_VERSION. Use Node $MIN_MAJOR or newer."
+            exit 1
+          fi
+        else
+          echo "::warning::Unrecognised engines.node range '$RANGE'; skipping the compatibility check."
+          exit 0
+        fi
+
+        echo "Node $NODE_VERSION satisfies the plugin requirement ($RANGE)."
+
+    - name: Cache Twilio CLI
+      id: cache-twilio-cli
+      uses: actions/cache@v5
+      with:
+        path: |
+          ~/.npm
+          ~/.twilio-cli
+        key: ${{ runner.os }}-npm-twilio-cli-5.5-flex-${{env.PLUGIN_SCRIPTS_VERSION}}
+
+    - name: Install Twilio CLI
+      shell: bash
+      run: npm install twilio-cli@5.5 -g
+
+    - name: Install Flex CLI
+      shell: bash
+      run: twilio plugins:install @twilio-labs/plugin-flex@${{env.PLUGIN_SCRIPTS_VERSION}}
