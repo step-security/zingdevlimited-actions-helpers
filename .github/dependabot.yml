@@ -1,0 +1,86 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /create-flex-plugin-version/dist
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /deploy-assets/dist
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /deploy-flex-plugin-asset/dist
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /get-twilio-functions-service/dist
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /get-twilio-resource-sid/dist
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /install-library-flex-plugin/dist
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /register-event-stream-webhook/dist
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /release-flex-plugin-versions/dist
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /reset-twilio-account/dist
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /set-flex-teams/dist
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /update-content-templates/dist
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /update-flex-skills/dist
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /update-sync/dist
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /update-taskrouter/dist
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /update-twilio-functions-variables/dist
+    schedule:
+      interval: daily
