@@ -8,7 +8,7 @@ Authentication is handled via Azure Managed Identity (OIDC — no client secret 
 ```yaml
 steps:
   - name: Terraform Init
-    uses: step-security/zingdevlimited-actions-helpers/azure/terraform-init@v4
+    uses: step-security/zingdevlimited-actions-helpers/azure/terraform-init@v5
     with:
       AZ_CLIENT_ID: ${{ vars.AZ_CLIENT_ID }}
       AZ_TENANT_ID: ${{ vars.AZ_TENANT_ID }}

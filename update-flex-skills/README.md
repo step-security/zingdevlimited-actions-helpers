@@ -24,7 +24,7 @@ A newline-separated list is enough when a worker either has the skill or does no
 
 ```yaml
   - name: Apply worker skills
-    uses: step-security/zingdevlimited-actions-helpers/update-flex-skills@v4
+    uses: step-security/zingdevlimited-actions-helpers/update-flex-skills@v5
     with:
       SIMPLE_SKILLS: |
         billing
@@ -47,7 +47,7 @@ To let a skill carry a proficiency, pass a JSON array. Each object takes:
 
 ```yaml
   - name: Apply worker skills
-    uses: step-security/zingdevlimited-actions-helpers/update-flex-skills@v4
+    uses: step-security/zingdevlimited-actions-helpers/update-flex-skills@v5
     with:
       COMPLEX_SKILLS: |
         [
@@ -65,7 +65,7 @@ To let a skill carry a proficiency, pass a JSON array. Each object takes:
 
 ```yaml
   - name: Reset worker skills
-    uses: step-security/zingdevlimited-actions-helpers/update-flex-skills@v4
+    uses: step-security/zingdevlimited-actions-helpers/update-flex-skills@v5
     with:
       MODE: replace
       SIMPLE_SKILLS: |

@@ -15,7 +15,7 @@ Each line of `EVENT_TYPES` is an event name and its schema version, separated by
 
 ```yaml
   - name: Subscribe to task events
-    uses: step-security/zingdevlimited-actions-helpers/register-event-stream-webhook@v4
+    uses: step-security/zingdevlimited-actions-helpers/register-event-stream-webhook@v5
     with:
       SINK_WEBHOOK_URL: https://my-api-1234.twil.io/events/task
       SINK_WEBHOOK_METHOD: POST
@@ -56,7 +56,7 @@ One Sink handles one destination URL, so use a step per endpoint when different 
 
 ```yaml
   - name: Subscribe to completed calls
-    uses: step-security/zingdevlimited-actions-helpers/register-event-stream-webhook@v4
+    uses: step-security/zingdevlimited-actions-helpers/register-event-stream-webhook@v5
     with:
       SINK_WEBHOOK_URL: https://my-api-1234.twil.io/events/call-completed
       SINK_WEBHOOK_METHOD: POST
@@ -69,7 +69,7 @@ One Sink handles one destination URL, so use a step per endpoint when different 
       TWILIO_API_SECRET: ${{ secrets.TWILIO_API_SECRET }}
 
   - name: Subscribe to outbound messages
-    uses: step-security/zingdevlimited-actions-helpers/register-event-stream-webhook@v4
+    uses: step-security/zingdevlimited-actions-helpers/register-event-stream-webhook@v5
     with:
       SINK_WEBHOOK_URL: https://my-api-1234.twil.io/events/message-sent
       SINK_WEBHOOK_METHOD: POST

@@ -9,7 +9,7 @@ Turns a readable `KEY=VALUE` block into the JSON array shape Azure App Service a
 ```yaml
 - name: Build the app settings
   id: appSettings
-  uses: step-security/zingdevlimited-actions-helpers/azure/format-app-settings@v4
+  uses: step-security/zingdevlimited-actions-helpers/azure/format-app-settings@v5
   with:
     APP_SETTINGS_ENV: |
       WEBSITE_RUN_FROM_PACKAGE=1
@@ -46,7 +46,7 @@ App settings usually contain secrets, and a step output carrying a secret is not
 ```yaml
 - name: Build the app settings
   id: appSettings
-  uses: step-security/zingdevlimited-actions-helpers/azure/format-app-settings@v4
+  uses: step-security/zingdevlimited-actions-helpers/azure/format-app-settings@v5
   with:
     ENCRYPT_OUTPUT: true
     ENCRYPTION_PASSWORD: ${{ secrets.SETTINGS_ENCRYPTION_PASSWORD }}

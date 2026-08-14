@@ -17,7 +17,7 @@ steps:
       sparse-checkout-cone-mode: false
 
   - name: Apply Taskrouter configuration
-    uses: step-security/zingdevlimited-actions-helpers/update-taskrouter@v4
+    uses: step-security/zingdevlimited-actions-helpers/update-taskrouter@v5
     with:
       CONFIG_PATH: taskrouter-config.json
       TWILIO_API_KEY: ${{ vars.TWILIO_API_KEY }}
@@ -47,7 +47,7 @@ Flex accounts come with one Workspace, and leaving `WORKSPACE_NAME` unset simply
 
 ```yaml
   - name: Apply Taskrouter configuration
-    uses: step-security/zingdevlimited-actions-helpers/update-taskrouter@v4
+    uses: step-security/zingdevlimited-actions-helpers/update-taskrouter@v5
     with:
       CONFIG_PATH: taskrouter-config.json
       WORKSPACE_NAME: Support Workspace

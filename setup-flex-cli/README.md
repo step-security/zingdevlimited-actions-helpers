@@ -23,7 +23,7 @@ Node has to be set up first, since the CLI and its plugin are installed with npm
 
   - name: Install the Flex CLI
     id: flexCli
-    uses: step-security/zingdevlimited-actions-helpers/setup-flex-cli@v4
+    uses: step-security/zingdevlimited-actions-helpers/setup-flex-cli@v5
     with:
       PLUGIN_DIRECTORY: plugin-agent-tools
 

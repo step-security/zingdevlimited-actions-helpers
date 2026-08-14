@@ -17,7 +17,7 @@ steps:
       sparse-checkout-cone-mode: false
 
   - name: Apply Flex teams
-    uses: step-security/zingdevlimited-actions-helpers/set-flex-teams@v4
+    uses: step-security/zingdevlimited-actions-helpers/set-flex-teams@v5
     with:
       CONFIG_PATH: teams.json
       TWILIO_API_KEY: ${{ vars.TWILIO_API_KEY }}

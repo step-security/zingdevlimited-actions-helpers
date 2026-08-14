@@ -10,7 +10,7 @@ The named section is replaced wholesale on each run, while every other key in `u
 
 ```yaml
   - name: Publish the plugin configuration
-    uses: step-security/zingdevlimited-actions-helpers/update-flex-config@v4
+    uses: step-security/zingdevlimited-actions-helpers/update-flex-config@v5
     with:
       CONFIG_SECTION: crmConnector
       CONFIG_DATA_JSON: |

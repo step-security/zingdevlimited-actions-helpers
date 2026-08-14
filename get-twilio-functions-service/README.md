@@ -9,7 +9,7 @@ Resolves a deployed Twilio Functions Service by name and reports back the SIDs a
 ```yaml
   - name: Look up the API service
     id: api
-    uses: step-security/zingdevlimited-actions-helpers/get-twilio-functions-service@v4
+    uses: step-security/zingdevlimited-actions-helpers/get-twilio-functions-service@v5
     with:
       SERVICE_NAME: my-api
       TWILIO_API_KEY: ${{ vars.TWILIO_API_KEY }}
@@ -49,7 +49,7 @@ Services installed from the Twilio Flex plugin library get a generated unique na
 ```yaml
   - name: Look up the callback service
     id: callback
-    uses: step-security/zingdevlimited-actions-helpers/get-twilio-functions-service@v4
+    uses: step-security/zingdevlimited-actions-helpers/get-twilio-functions-service@v5
     with:
       SERVICE_NAME: plibo-queued-callback-and-voicemail
       IS_PATTERN: true

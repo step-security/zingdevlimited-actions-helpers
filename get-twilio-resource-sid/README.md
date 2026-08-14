@@ -48,7 +48,7 @@ Asking for `API_TYPE: Workspaces` returns that resolved SID directly, with no se
 ```yaml
   - name: Look up the Sync Service
     id: sync
-    uses: step-security/zingdevlimited-actions-helpers/get-twilio-resource-sid@v4
+    uses: step-security/zingdevlimited-actions-helpers/get-twilio-resource-sid@v5
     with:
       TWILIO_AREA: sync
       API_TYPE: Services
@@ -66,7 +66,7 @@ Asking for `API_TYPE: Workspaces` returns that resolved SID directly, with no se
 ```yaml
   - name: Look up the onboarding flow
     id: flow
-    uses: step-security/zingdevlimited-actions-helpers/get-twilio-resource-sid@v4
+    uses: step-security/zingdevlimited-actions-helpers/get-twilio-resource-sid@v5
     with:
       TWILIO_AREA: studio
       API_TYPE: Flows
@@ -84,7 +84,7 @@ No search inputs — the account's Workspace is returned as-is.
 ```yaml
   - name: Look up the Workspace
     id: workspace
-    uses: step-security/zingdevlimited-actions-helpers/get-twilio-resource-sid@v4
+    uses: step-security/zingdevlimited-actions-helpers/get-twilio-resource-sid@v5
     with:
       TWILIO_AREA: taskrouter
       API_TYPE: Workspaces
@@ -99,7 +99,7 @@ The Workspace segment is added automatically.
 ```yaml
   - name: Look up the billing queue
     id: queue
-    uses: step-security/zingdevlimited-actions-helpers/get-twilio-resource-sid@v4
+    uses: step-security/zingdevlimited-actions-helpers/get-twilio-resource-sid@v5
     with:
       TWILIO_AREA: taskrouter
       API_TYPE: TaskQueues
@@ -114,7 +114,7 @@ The Workspace segment is added automatically.
 ```yaml
   - name: Look for a previous deployment
     id: previous
-    uses: step-security/zingdevlimited-actions-helpers/get-twilio-resource-sid@v4
+    uses: step-security/zingdevlimited-actions-helpers/get-twilio-resource-sid@v5
     with:
       TWILIO_AREA: serverless
       API_TYPE: Services

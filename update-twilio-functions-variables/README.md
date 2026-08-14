@@ -10,7 +10,7 @@ Applies the environment variables of a deployed Twilio Functions Service from a 
 
 ```yaml
   - name: Apply Functions variables
-    uses: step-security/zingdevlimited-actions-helpers/update-twilio-functions-variables@v4
+    uses: step-security/zingdevlimited-actions-helpers/update-twilio-functions-variables@v5
     with:
       SERVICE_NAME: my-api
       VARIABLES_ENV: |
@@ -43,7 +43,7 @@ Where a variable really is optional, list its key in `OPTIONAL_VARIABLES`:
 
 ```yaml
   - name: Apply Functions variables
-    uses: step-security/zingdevlimited-actions-helpers/update-twilio-functions-variables@v4
+    uses: step-security/zingdevlimited-actions-helpers/update-twilio-functions-variables@v5
     with:
       SERVICE_NAME: my-api
       OPTIONAL_VARIABLES: DEBUG_WEBHOOK_URL,FEATURE_FLAG_OVERRIDES

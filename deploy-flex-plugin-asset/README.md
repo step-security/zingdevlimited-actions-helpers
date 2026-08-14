@@ -11,7 +11,7 @@ It targets the same `default` Functions Service the Flex CLI uses, creating it i
 ```yaml
   - name: Upload the plugin bundle
     id: bundle
-    uses: step-security/zingdevlimited-actions-helpers/deploy-flex-plugin-asset@v4
+    uses: step-security/zingdevlimited-actions-helpers/deploy-flex-plugin-asset@v5
     with:
       FILE_PATH: plugin-agent-tools/build/plugin-agent-tools.js
       PLUGIN_NAME: plugin-agent-tools
@@ -49,7 +49,7 @@ The usual fix is to bump the version in `package.json`. `ALLOW_VERSION_OVERWRITE
 
 ```yaml
   - name: Upload the plugin bundle
-    uses: step-security/zingdevlimited-actions-helpers/deploy-flex-plugin-asset@v4
+    uses: step-security/zingdevlimited-actions-helpers/deploy-flex-plugin-asset@v5
     with:
       FILE_PATH: plugin-agent-tools/build/plugin-agent-tools.js
       PLUGIN_NAME: plugin-agent-tools
