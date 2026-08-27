@@ -10,7 +10,7 @@
     "axios": "1.19.0"
   },
   "devDependencies": {
-    "@types/node": "^22.15.21",
+    "@types/node": "^26.3.0",
     "@vercel/ncc": "0.44.1",
     "typescript": "5.8.3"
   }
